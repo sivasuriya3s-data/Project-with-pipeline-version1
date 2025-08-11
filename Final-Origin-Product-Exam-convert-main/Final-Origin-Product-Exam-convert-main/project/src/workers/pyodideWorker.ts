@@ -17,9 +17,60 @@ self.onmessage = async function(e: MessageEvent<PyodideWorkerMessage>) {
 
     if (!pyodide) {
       await initializePyodide();
-    }
-  }
 }
+
+    if (type === 'analyze') {
+      const { files, examCode } = data;
+      const results = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Analyze document type
+        const detectedType = pyodide.runPython(`
+analyzer.analyze_document_type("${file.name}")
+        `);
+        
+        // Generate new filename
+        const newName = pyodide.runPython(`
+analyzer.generate_new_filename("${detectedType}", "${examCode}", ${i})
+        `);
+        
+        results.push({
+          id: file.id,
+          originalName: file.name,
+          detectedType,
+          newName: newName + '.' + file.name.split('.').pop()
+        });
+      }
+      
+      self.postMessage({
+        type: 'result',
+        data: results
+      });
+    }
+  } catch (error) {
+    self.postMessage({
+      type: 'error',
+      error: error.message
+    });
+  }
+};
+async function initializePyodide() {
+  if (isInitialized) return;
+  
+  try {
+    // Initialize Pyodide
+    const { loadPyodide } = await import('pyodide');
+    pyodide = await loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
+    });
+    
+    // Install required packages (minimal set for faster loading)
+    await pyodide.loadPackage(['micropip']);
+    
+    // Load our Python document analyzer
+    await pyodide.runPython(`
 import re
 
 class DocumentAnalyzer:
@@ -169,56 +220,3 @@ analyzer = DocumentAnalyzer()
     throw error;
   }
 }
-
-    if (type === 'analyze') {
-      const { files, examCode } = data;
-      const results = [];
-      
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Analyze document type
-        const detectedType = pyodide.runPython(`
-analyzer.analyze_document_type("${file.name}")
-        `);
-        
-        // Generate new filename
-        const newName = pyodide.runPython(`
-analyzer.generate_new_filename("${detectedType}", "${examCode}", ${i})
-        `);
-        
-        results.push({
-          id: file.id,
-          originalName: file.name,
-          detectedType,
-          newName: newName + '.' + file.name.split('.').pop()
-        });
-      }
-      
-      self.postMessage({
-        type: 'result',
-        data: results
-      });
-    }
-  } catch (error) {
-    self.postMessage({
-      type: 'error',
-      error: error.message
-    });
-  }
-};
-async function initializePyodide() {
-  if (isInitialized) return;
-  
-  try {
-    // Initialize Pyodide
-    const { loadPyodide } = await import('pyodide');
-    pyodide = await loadPyodide({
-      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
-    });
-    
-    // Install required packages (minimal set for faster loading)
-    await pyodide.loadPackage(['micropip']);
-    
-    // Load our Python document analyzer
-    await pyodide.runPython(`

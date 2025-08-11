@@ -51,10 +51,14 @@ COPY --from=node-builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Add headers for WASM and SharedArrayBuffer support
-RUN echo 'add_header Cross-Origin-Embedder-Policy require-corp;' > /etc/nginx/conf.d/headers.conf && \
-    echo 'add_header Cross-Origin-Opener-Policy same-origin;' >> /etc/nginx/conf.d/headers.conf
+# Create nginx directories and set permissions
+RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run && \
+    chown -R nginx:nginx /var/cache/nginx /var/log/nginx /var/run /usr/share/nginx/html
 
 EXPOSE 80
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/health || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

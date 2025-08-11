@@ -1,4 +1,5 @@
 import { ProcessedFile } from '../types';
+import { AppError, handleError, logError } from '../utils/errorHandler';
 
 export class DocumentAnalyzerService {
   private worker: Worker | null = null;
@@ -6,33 +7,39 @@ export class DocumentAnalyzerService {
 
   async initialize(): Promise<void> {
     if (!this.worker && !this.isInitialized) {
-      this.worker = new Worker(
-        new URL('../workers/pyodideWorker.ts', import.meta.url),
-        { type: 'module' }
-      );
-      
-      // Wait for worker to be ready
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Worker initialization timeout'));
-        }, 30000);
+      try {
+        this.worker = new Worker(
+          new URL('../workers/pyodideWorker.ts', import.meta.url),
+          { type: 'module' }
+        );
+        
+        // Wait for worker to be ready
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new AppError('Worker initialization timeout', 'WORKER_TIMEOUT'));
+          }, 30000);
 
-        this.worker!.onmessage = (e) => {
-          if (e.data.type === 'ready') {
+          this.worker!.onmessage = (e) => {
+            if (e.data.type === 'ready') {
+              clearTimeout(timeout);
+              this.isInitialized = true;
+              resolve();
+            }
+          };
+
+          this.worker!.onerror = (error) => {
             clearTimeout(timeout);
-            this.isInitialized = true;
-            resolve();
-          }
-        };
+            reject(new AppError('Worker initialization failed', 'WORKER_ERROR'));
+          };
 
-        this.worker!.onerror = (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        };
-
-        // Send initialization message
-        this.worker!.postMessage({ type: 'init' });
-      });
+          // Send initialization message
+          this.worker!.postMessage({ type: 'init' });
+        });
+      } catch (error) {
+        const appError = handleError(error);
+        logError(appError, 'DocumentAnalyzer.initialize');
+        throw appError;
+      }
     }
   }
 

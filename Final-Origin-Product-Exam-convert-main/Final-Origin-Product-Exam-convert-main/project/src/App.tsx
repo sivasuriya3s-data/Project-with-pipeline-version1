@@ -38,8 +38,11 @@ function App() {
       await rustFormatter.setExamConfig(EXAM_CONFIGS[examCode]);
       
       setServicesReady(true);
+      console.log(`Services initialized for ${examCode.toUpperCase()}`);
     } catch (error) {
       console.error('Failed to initialize services:', error);
+      // Show user-friendly error message
+      alert('Failed to initialize document processing services. Please refresh the page and try again.');
     } finally {
       setIsInitializing(false);
     }

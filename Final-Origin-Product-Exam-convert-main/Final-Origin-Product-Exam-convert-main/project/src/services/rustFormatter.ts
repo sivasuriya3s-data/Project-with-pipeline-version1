@@ -1,4 +1,5 @@
 import { ProcessedFile, ExamConfig } from '../types';
+import { AppError, handleError, logError } from '../utils/errorHandler';
 
 export class RustFormatterService {
   private wasmModule: any = null;
@@ -16,15 +17,19 @@ export class RustFormatterService {
         this.isInitialized = true;
         console.log('Rust WASM module initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize Rust WASM module:', error);
-        throw new Error('Failed to load document formatter. Please refresh the page.');
+        const appError = new AppError(
+          'Failed to load document formatter. Please refresh the page.',
+          'WASM_INIT_ERROR'
+        );
+        logError(appError, 'RustFormatter.initialize');
+        throw appError;
       }
     }
   }
 
   async setExamConfig(examConfig: ExamConfig): Promise<void> {
     if (!this.formatter) {
-      await wasmModule.default();
+      await this.initialize();
     }
     
     try {

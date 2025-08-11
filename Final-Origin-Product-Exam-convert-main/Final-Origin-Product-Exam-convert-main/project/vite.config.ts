@@ -30,12 +30,9 @@ export default defineConfig({
           'ui': ['lucide-react', 'tailwindcss']
         }
       }
-    },
-    rollupOptions: {
-      external: [],
-      output: {
-        format: 'es'
-      }
     }
+  },
+  worker: {
+    format: 'es'
   }
 });

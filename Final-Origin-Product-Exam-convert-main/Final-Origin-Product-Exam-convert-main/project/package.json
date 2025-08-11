@@ -14,7 +14,9 @@
     "setup": "chmod +x setup.sh && ./setup.sh",
     "clean": "rm -rf node_modules rust-formatter/pkg dist && npm install",
     "generate-pdf": "node scripts/generate-pdf.js",
-    "docs:pdf": "npm run generate-pdf"
+    "docs:pdf": "npm run generate-pdf",
+    "test": "echo \"No tests specified\" && exit 0",
+    "start": "npm run build:all && npm run preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
