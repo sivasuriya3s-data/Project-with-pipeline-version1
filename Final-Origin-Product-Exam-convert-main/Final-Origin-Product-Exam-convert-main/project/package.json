@@ -20,19 +20,20 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "comlink": "^4.4.1",
     "flowbite-react": "^0.11.7",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.511.0",
+    "pdf-lib": "^1.17.1",
+    "pyodide": "^0.24.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.7",
-    "pyodide": "^0.24.1",
-    "jszip": "^3.10.1",
-    "pdf-lib": "^1.17.1",
-    "tesseract.js": "^5.0.4",
-    "comlink": "^4.4.1"
+    "tesseract.js": "^5.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@types/node": "^24.2.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
@@ -40,10 +41,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "marked": "^11.1.1",
+    "puppeteer": "^21.6.1",
     "typescript": "^5.3.3",
     "vite": "^6.3.5",
-    "puppeteer": "^21.6.1",
-    "marked": "^11.1.1",
     "wasm-pack": "^0.12.1"
   }
 }
